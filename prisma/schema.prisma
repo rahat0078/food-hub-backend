@@ -12,3 +12,119 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model ProviderProfile {
+  id     String @id @default(uuid())
+  userId String @unique //TODO relation with user ---> id; after create userTable with better auth(automatic)
+
+  restaurantName      String
+  address             String
+  phone               String?
+  restaurantThumbnail String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  meals  Meal[]
+  orders Order[]
+
+  @@map("providerProfile")
+}
+
+model Category {
+  id   String @id @default(uuid())
+  name String @unique
+
+  meals Meal[]
+
+  @@map("category")
+}
+
+model Meal {
+  id String @id @default(uuid())
+
+  title       String
+  description String
+  price       Float
+  image       String?
+
+  providerId String
+  provider   ProviderProfile @relation(fields: [providerId], references: [id])
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  reviews    Review[]
+  orderItems OrderItem[]
+
+  @@index([providerId])
+
+  @@map("meals")
+}
+
+model Order {
+  id         String @id @default(uuid())
+  customerId String
+
+  providerId String
+  provider   ProviderProfile @relation(fields: [providerId], references: [id])
+
+  address    String
+  totalPrice Float
+  status     OrderStatus @default(PLACED)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orderItems OrderItem[]
+
+  @@index([providerId])
+
+  @@map("orders")
+}
+
+enum OrderStatus {
+  PLACED
+  PREPARING
+  READY
+  DELIVERED
+  CANCELLED
+}
+
+model OrderItem {
+  id String @id @default(uuid())
+
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id])
+
+  mealId String
+  meal   Meal   @relation(fields: [mealId], references: [id])
+
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("orderItems")
+}
+
+model Review {
+  id String @id @default(uuid())
+
+  userId String
+
+  mealId String
+
+  rating  Int
+  comment String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  meal Meal @relation(fields: [mealId], references: [id])
+
+  @@unique([userId, mealId])
+  @@index([mealId])
+  @@map("reviews")
+}
