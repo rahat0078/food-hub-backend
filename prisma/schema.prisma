@@ -40,10 +40,9 @@ model Category {
 }
 
 model Meal {
-  id String @id @default(uuid())
-
+  id          String  @id @default(uuid())
   title       String
-  description String
+  description String?
   price       Float
   image       String?
 
@@ -60,7 +59,6 @@ model Meal {
   orderItems OrderItem[]
 
   @@index([providerId])
-
   @@map("meals")
 }
 
@@ -81,7 +79,6 @@ model Order {
   orderItems OrderItem[]
 
   @@index([providerId])
-
   @@map("orders")
 }
 
