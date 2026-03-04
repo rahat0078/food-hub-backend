@@ -15,7 +15,8 @@ datasource db {
 
 model ProviderProfile {
   id     String @id @default(uuid())
-  userId String @unique //TODO relation with user ---> id; after create userTable with better auth(automatic)
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   restaurantName      String
   address             String
@@ -65,6 +66,7 @@ model Meal {
 model Order {
   id         String @id @default(uuid())
   customerId String
+  user       User   @relation(fields: [customerId], references: [id])
 
   providerId String
   provider   ProviderProfile @relation(fields: [providerId], references: [id])
@@ -110,8 +112,10 @@ model Review {
   id String @id @default(uuid())
 
   userId String
+  user   User   @relation(fields: [userId], references: [id])
 
   mealId String
+  meal   Meal   @relation(fields: [mealId], references: [id])
 
   rating  Int
   comment String?
@@ -119,9 +123,83 @@ model Review {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  meal Meal @relation(fields: [mealId], references: [id])
-
   @@unique([userId, mealId])
   @@index([mealId])
   @@map("reviews")
+}
+
+model User {
+  id            String    @id
+  name          String
+  email         String
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+
+  role  String? @default("USER")
+  phone String?
+
+  reviews         Review[]
+  orders          Order[]
+  providerProfile ProviderProfile?
+
+  @@unique([email])
+  @@map("user")
+}
+
+enum Role {
+  USER
+  PROVIDER
+  ADMIN
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
 }
