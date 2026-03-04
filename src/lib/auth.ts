@@ -17,6 +17,7 @@ const transporter = nodemailer.createTransport({
 
 
 
+
 export const auth = betterAuth({
     baseUrl: process.env.APP_URL,
     database: prismaAdapter(prisma, {
@@ -42,98 +43,102 @@ export const auth = betterAuth({
         autoSignIn: false,
         requireEmailVerification: true
     },
+    emailVerification: {
+        sendOnSignUp: true,
+        autoSignInAfterVerification: true,
+        sendVerificationEmail: async ({ user, url, token }) => {
+            const verificationUrl = `${process.env.APP_URL}/verify-email?token=${token}`;
+            try {
+                const info = await transporter.sendMail({
+                    from: '"Food hub" <foodhub@gmail.com>',
+                    to: user.email,
+                    subject: "Verify your Foodhub account",
+                    html: `
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Verify Your Email</title>
+      </head>
 
-    sendVerificationEmail: async ({ user, url, token }: {user: any, url: string, token: string}) => {
-        const verificationUrl = `${process.env.APP_URL}/verify-email?token=${token}`;
+      <body style="margin:0; padding:0; background-color:#f4f6f8; font-family:Arial, Helvetica, sans-serif;">
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td align="center" style="padding:40px 0;">
+              <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:8px; overflow:hidden;">
 
-        try {
-            const info = await transporter.sendMail({
-                from: '"Food hub" <foodhub@gmail.com>',
-                to: user.email,
-                subject: "Verify your Foodhub account",
-                html: `
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Verify Your Email</title>
-  </head>
+                <tr>
+                  <td style="background:#111827; padding:20px; text-align:center;">
+                    <h1 style="color:#ffffff; margin:0; font-size:24px;">Food Hub</h1>
+                  </td>
+                </tr>
 
-  <body style="margin:0; padding:0; background-color:#f4f6f8; font-family:Arial, Helvetica, sans-serif;">
-    <table width="100%" cellpadding="0" cellspacing="0">
-      <tr>
-        <td align="center" style="padding:40px 0;">
-          <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:8px; overflow:hidden;">
+                <tr>
+                  <td style="padding:30px;">
+                    <h2 style="color:#111827;">Verify your email address</h2>
 
-            <tr>
-              <td style="background:#111827; padding:20px; text-align:center;">
-                <h1 style="color:#ffffff; margin:0; font-size:24px;">Food Hub</h1>
-              </td>
-            </tr>
+                    <p style="color:#374151; font-size:15px; line-height:1.6;">
+                      Thanks for signing up for <strong>Food Hub</strong>.
+                      Please confirm your email address by clicking the button below.
+                    </p>
 
-            <tr>
-              <td style="padding:30px;">
-                <h2 style="color:#111827;">Verify your email address</h2>
+                    <div style="text-align:center; margin:30px 0;">
+                      <a
+                        href="${verificationUrl}"
+                        style="
+                          background:#2563eb;
+                          color:#ffffff;
+                          text-decoration:none;
+                          padding:12px 24px;
+                          border-radius:6px;
+                          display:inline-block;
+                          font-weight:bold;
+                        "
+                      >
+                        Verify Email
+                      </a>
+                    </div>
 
-                <p style="color:#374151; font-size:15px; line-height:1.6;">
-                  Thanks for signing up for <strong>Food Hub</strong>.
-                  Please confirm your email address by clicking the button below.
-                </p>
+                    <p style="color:#6b7280; font-size:14px;">
+                      If the button doesn’t work, copy and paste this link:
+                    </p>
 
-                <div style="text-align:center; margin:30px 0;">
-                  <a
-                    href="${verificationUrl}"
-                    style="
-                      background:#2563eb;
-                      color:#ffffff;
-                      text-decoration:none;
-                      padding:12px 24px;
-                      border-radius:6px;
-                      display:inline-block;
-                      font-weight:bold;
-                    "
-                  >
-                    Verify Email
-                  </a>
-                </div>
+                    <p style="word-break:break-all; font-size:13px; color:#2563eb;">
+                      ${verificationUrl}
+                    </p>
 
-                <p style="color:#6b7280; font-size:14px;">
-                  If the button doesn’t work, copy and paste this link:
-                </p>
+                    <p style="color:#6b7280; font-size:13px; margin-top:30px;">
+                      If you didn’t create an account, you can safely ignore this email.
+                    </p>
+                  </td>
+                </tr>
 
-                <p style="word-break:break-all; font-size:13px; color:#2563eb;">
-                  ${verificationUrl}
-                </p>
+                <tr>
+                  <td style="background:#f9fafb; padding:20px; text-align:center; font-size:12px; color:#6b7280;">
+                    © ${new Date().getFullYear()} Food Hub. All rights reserved.
+                  </td>
+                </tr>
 
-                <p style="color:#6b7280; font-size:13px; margin-top:30px;">
-                  If you didn’t create an account, you can safely ignore this email.
-                </p>
-              </td>
-            </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
+            `,
+                });
+            } catch (error: any) {
+                console.error("Failed to send verification email", {
+                    userId: user.id,
+                    email: user.email,
+                    error: error?.message,
+                });
 
-            <tr>
-              <td style="background:#f9fafb; padding:20px; text-align:center; font-size:12px; color:#6b7280;">
-                © ${new Date().getFullYear()} Food Hub. All rights reserved.
-              </td>
-            </tr>
-
-          </table>
-        </td>
-      </tr>
-    </table>
-  </body>
-</html>
-        `,
-            });
-        } catch (error: any) {
-            console.error("Failed to send verification email", {
-                userId: user.id,
-                email: user.email,
-                error: error?.message,
-            });
-
-            throw new Error("Verification email could not be sent");
-        }
+                throw new Error("Verification email could not be sent");
+            }
+        },
     },
+
+
 }); 
