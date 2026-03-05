@@ -11,7 +11,7 @@ import cors from 'cors';
 
 const app: Application = express();
 app.use(cors({
-    origin: process.env.APP_URL,
+    origin: process.env.APP_URL, // client site url
     credentials: true
 }))
 
