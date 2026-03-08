@@ -12,7 +12,15 @@ const auth = (...roles: UserRole[]) => {
             if (!session) {
                 return res.status(401).json({
                     success: false,
-                    message: "Unauthorized",
+                    message: "Unauthorized: session missing",
+                });
+            }
+
+
+            if (!session.user.emailVerified) {
+                return res.status(403).json({
+                    success: false,
+                    message: "Verify your email first",
                 });
             }
 
@@ -24,22 +32,17 @@ const auth = (...roles: UserRole[]) => {
                 emailVerified: session.user.emailVerified,
             };
 
-            if (!session.user.emailVerified) {
-                return res.status(403).json({
-                    success: false,
-                    message: "Verify your email first",
-                });
-            }
 
             if (roles.length && !roles.includes(req.user.role as UserRole)) {
                 return res.status(403).json({
                     success: false,
-                    message: "Access denied",
+                    message: "You are not authorized",
                 });
             }
 
             next();
         } catch (error) {
+            console.error("Auth Middleware Error:", error);
             next(error);
         }
     };

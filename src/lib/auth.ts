@@ -6,54 +6,54 @@ import nodemailer from 'nodemailer';
 
 
 const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false, //Use true for port 465, false for port 587
-    auth: {
-        user: process.env.APP_USER,
-        pass: process.env.APP_PASS,
-    },
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false, //Use true for port 465, false for port 587
+  auth: {
+    user: process.env.APP_USER,
+    pass: process.env.APP_PASS,
+  },
 });
 
 
 
 
 export const auth = betterAuth({
-    baseUrl: process.env.APP_URL,
-    database: prismaAdapter(prisma, {
-        provider: "postgresql",
-    }),
-    trustedOrigins: [process.env.APP_URL!],
-    user: {
-        additionalFields: {
-            role: {
-                type: "string",
-                options: Object.values(Role),
-                defaultValue: Role.USER,
-                required: false
-            },
-            phone: {
-                type: "string",
-                required: false,
-            },
-        },
+  baseUrl: process.env.APP_URL,
+  database: prismaAdapter(prisma, {
+    provider: "postgresql",
+  }),
+  trustedOrigins: [process.env.APP_URL!],
+  user: {
+    additionalFields: {
+      role: {
+        type: "string",
+        options: Object.values(Role),
+        defaultValue: Role.USER,
+        required: false
+      },
+      phone: {
+        type: "string",
+        required: false,
+      },
     },
-    emailAndPassword: {
-        enabled: true,
-        autoSignIn: false,
-        requireEmailVerification: true
-    },
-    emailVerification: {
-        sendOnSignUp: true,
-        autoSignInAfterVerification: true,
-        sendVerificationEmail: async ({ user, url, token }) => {
-            const verificationUrl = `${process.env.APP_URL}/verify-email?token=${token}`;
-            try {
-                const info = await transporter.sendMail({
-                    from: '"Food hub" <foodhub@gmail.com>',
-                    to: user.email,
-                    subject: "Verify your Foodhub account",
-                    html: `
+  },
+  emailAndPassword: {
+    enabled: true,
+    autoSignIn: false,
+    requireEmailVerification: true
+  },
+  emailVerification: {
+    sendOnSignUp: true,
+    autoSignInAfterVerification: true,
+    sendVerificationEmail: async ({ user, url, token }) => {
+      const verificationUrl = `${process.env.APP_URL}/verify-email?token=${token}`;
+      try {
+        const info = await transporter.sendMail({
+          from: '"Food hub" <foodhub@gmail.com>',
+          to: user.email,
+          subject: "Verify your Foodhub account",
+          html: `
     <!DOCTYPE html>
     <html lang="en">
       <head>
@@ -127,18 +127,48 @@ export const auth = betterAuth({
       </body>
     </html>
             `,
-                });
-            } catch (error: any) {
-                console.error("Failed to send verification email", {
-                    userId: user.id,
-                    email: user.email,
-                    error: error?.message,
-                });
+        });
+      } catch (error: any) {
+        console.error("Failed to send verification email", {
+          userId: user.id,
+          email: user.email,
+          error: error?.message,
+        });
 
-                throw new Error("Verification email could not be sent");
-            }
-        },
+        throw new Error("Verification email could not be sent");
+      }
     },
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user, ctx) => {
 
+          const body: any = ctx?.body;
+
+          if (user.role === Role.PROVIDER) {
+
+            const { restaurantName, address, phone, restaurantThumbnail } = body;
+
+            if (!restaurantName || !address || !phone) {
+              throw new Error("Provider must provide restaurant information");
+            }
+
+            await prisma.providerProfile.create({
+              data: {
+                userId: user.id,
+                restaurantName,
+                address,
+                phone,
+                restaurantThumbnail
+              }
+            });
+
+          }
+
+        }
+      }
+    }
+  },
 
 }); 

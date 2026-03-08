@@ -6,8 +6,8 @@ model ProviderProfile {
 
   restaurantName      String
   address             String
-  phone               String?
-  restaurantThumbnail String?
+  phone               String
+  restaurantThumbnail String
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
