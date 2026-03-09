@@ -88,9 +88,50 @@ const deleteMeal = async (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
+//TODO: PATCH	/api/provider/orders/:id	Update order status
+
+const getAllProviders = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const result = await providersService.getAllProviders();
+
+        res.status(200).json({
+            success: true,
+            message: "Providers retrive successfully",
+            data: result
+        });
+
+    } catch (error) {
+        next(error)
+    }
+}
+
+
+const getProviderById = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { id } = req.params;
+
+        const result = await providersService.getProviderById(id as string);
+
+        if (result === null) {
+            res.status(404).json({
+                success: false,
+                message: "provider not found"
+            });
+        } else {
+            res.status(200).json({
+                success: true,
+                data: result
+            });
+        }
+
+    } catch (error) {
+        next(error)
+    }
+}
+
 
 
 
 export const providersController = {
-    createMeals, updateMeal, deleteMeal
+    createMeals, updateMeal, deleteMeal, getAllProviders, getProviderById
 }

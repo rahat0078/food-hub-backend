@@ -37,6 +37,28 @@ const deleteMeal = async (id: string) => {
 };
 
 
+const getAllProviders = async () => {
+    const result = await prisma.providerProfile.findMany();
+    return result;
+};
+
+const getProviderById = async (id: string) => {
+  const result = await prisma.providerProfile.findUnique({
+    where: { id },
+    include: {
+      meals: true,
+      _count: {
+        select: {
+            meals: true
+        }
+      }
+    }
+  });
+
+  return result;
+};
+
+
 export const providersService = {
-    createMeals, updateMeal, deleteMeal
+    createMeals, updateMeal, deleteMeal, getAllProviders, getProviderById
 }
