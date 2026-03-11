@@ -90,20 +90,51 @@ const getAllMeals = async ({
 
 const getMealById = async (id: string) => {
 
-    const result= await prisma.meal.findUnique({
-        where: {id},
+    const result = await prisma.meal.findUnique({
+        where: { id },
         include: {
             provider: true,
-            reviews: true, 
-            category: true
+            category: true,
+            reviews: {
+                include: {
+                    user: {
+                        select: {
+                            name: true,
+                            email: true,
+                            image: true
+                        }
+                    }
+                }
+            }
         }
     })
 
     return result;
- 
+
 }
+
+const createReview = async (userId: string, payload: { mealId: string; rating: number; comment?: string }) => {
+    const { mealId, rating, comment } = payload;
+
+    console.log({ userId, mealId, rating, comment });
+
+    const result = await prisma.review.create({
+        data: {
+            userId,
+            mealId,
+            rating,
+            comment: comment ?? null
+        },
+        include: {
+            user: true,
+            meal: true
+        }
+    })
+
+    return result;
+};
 
 
 export const mealService = {
-    getAllMeals, getMealById
+    getAllMeals, getMealById, createReview
 }

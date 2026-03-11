@@ -51,7 +51,23 @@ const getMealById = async (req: Request, res: Response, next: NextFunction) => {
     }
 }
 
+const createReview = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const userId = req.user?.id
+        const { mealId, rating, comment } = req.body;
 
+        const result = await mealService.createReview(userId as string, { mealId, rating, comment, });
+
+        res.status(201).json({
+            success: true,
+            message: "Review created successfully",
+            data: result,
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
 
 
 
@@ -59,5 +75,5 @@ const getMealById = async (req: Request, res: Response, next: NextFunction) => {
 
 
 export const mealsController = {
-    getAllMeals, getMealById
+    getAllMeals, getMealById, createReview
 }
