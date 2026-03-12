@@ -1,5 +1,6 @@
 import { UserStatus } from "../../enums/userStatus"
 import { prisma } from "../../lib/prisma"
+import { AppError } from './../../utils/appError';
 
 const createCategory = async (name: string) => {
     return await prisma.category.create({
@@ -16,6 +17,8 @@ const deleteCategory = async (id: string) => {
         }
     })
 }
+
+
 const getAllUsers = async () => {
     return await prisma.user.findMany()
 }
@@ -27,7 +30,7 @@ const updateUserStatus = async (id: string, status: UserStatus) => {
     });
 
     if (!user) {
-        throw new Error("User not found");
+        throw new AppError("User not found");
     }
 
     const result = await prisma.user.update({

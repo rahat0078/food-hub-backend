@@ -1,5 +1,7 @@
 import { Meal } from "../../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
+import { AppError } from './../../utils/appError';
+import { OrderStatus } from './../../../generated/prisma/enums';
 
 
 
@@ -12,9 +14,6 @@ const createMeals = async (data: Omit<Meal, "id" | "createdAt" | "updatedAt">) =
 
 
 const updateMeal = async (id: string, payload: any) => {
-
-
-
     const result = await prisma.meal.update({
         where: {
             id
@@ -34,6 +33,37 @@ const deleteMeal = async (id: string) => {
     });
 
     return result;
+};
+
+
+const updateOrderStatus = async (id: string, userId: string, status: OrderStatus) => {
+    
+
+    const providerProfile = await prisma.providerProfile.findUnique({
+        where: { userId }
+    });
+    if (!providerProfile) throw new AppError("Provider profile not found", 404);
+
+    const order = await prisma.order.findUnique({
+        where: { id }
+    });
+    
+    if (!order) throw new AppError("Order not found", 404);
+
+    if (order.providerId !== providerProfile.id)
+        throw new AppError("Not allowed to update this order", 403);
+
+    const updatedOrder = await prisma.order.update({
+        where: { id },
+        data: { status },
+        include: {
+            user: true,
+            provider: true,
+            orderItems: { include: { meal: true } }
+        }
+    });
+
+    return updatedOrder;
 };
 
 
@@ -64,7 +94,7 @@ const getProviderMeals = async (userId: string) => {
     });
 
     if (!provider) {
-        throw new Error("Provider profile not found");
+        throw new AppError("Provider profile not found");
     }
 
     const meals = await prisma.meal.findMany({
@@ -104,5 +134,5 @@ const getProviderMeals = async (userId: string) => {
 
 
 export const providersService = {
-    createMeals, updateMeal, deleteMeal, getAllProviders, getProviderById, getProviderMeals
+    createMeals, updateMeal, deleteMeal, getAllProviders, getProviderById, getProviderMeals, updateOrderStatus
 }

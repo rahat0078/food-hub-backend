@@ -88,7 +88,26 @@ const deleteMeal = async (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
-//TODO: PATCH	/api/provider/orders/:id	Update order status
+const updateOrderStatus = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user?.id;
+        const { status } = req.body;
+
+        const result = await providersService.updateOrderStatus(id as string, userId as string, status);
+
+        res.status(200).json({
+            success: true,
+            message: "Order status updated successfully",
+            data: result
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+
+
 
 const getAllProviders = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -150,5 +169,5 @@ const getProviderMeals = async (req: Request, res: Response, next: NextFunction)
 
 
 export const providersController = {
-    createMeals, updateMeal, deleteMeal, getAllProviders, getProviderById, getProviderMeals
+    createMeals, updateMeal, deleteMeal, getAllProviders, getProviderById, getProviderMeals, updateOrderStatus
 }

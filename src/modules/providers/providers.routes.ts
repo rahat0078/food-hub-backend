@@ -12,6 +12,7 @@ router.get("/", providersController.getAllProviders)
 router.get("/:id", providersController.getProviderById)
 router.post("/meals", auth(UserRole.PROVIDER), providersController.createMeals)
 router.put("/meals/:id", auth(UserRole.PROVIDER), providersController.updateMeal);
+router.patch("/orders/:id", auth(UserRole.PROVIDER), providersController.updateOrderStatus);
 router.delete("/meals/:id", auth(UserRole.PROVIDER), providersController.deleteMeal);
 
 
