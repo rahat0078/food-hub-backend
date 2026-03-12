@@ -8,6 +8,7 @@ import cors from 'cors';
 import { providerRouter } from './modules/providers/providers.routes';
 import errorHandler from './middlewares/errorHandler';
 import { adminRouter } from './modules/admin/admin.routes';
+import { statsRouter } from './modules/stats/stats.routes';
 
 
 const app: Application = express();
@@ -25,6 +26,7 @@ app.use("/api/providers", providerRouter)
 app.use("/api/meals", mealsRouter)
 app.use("/api/orders", ordersRouter)
 app.use("/api/admin", adminRouter)
+app.use("/api/stats", statsRouter)
 
 
 
