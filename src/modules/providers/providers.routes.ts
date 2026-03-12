@@ -10,6 +10,6 @@ router.get("/:id", providersController.getProviderById)
 router.post("/meals", auth(UserRole.PROVIDER), providersController.createMeals)
 router.put("/meals/:id", auth(UserRole.PROVIDER), providersController.updateMeal);
 router.delete("/meals/:id", auth(UserRole.PROVIDER), providersController.deleteMeal);
-
+//TODO: router.get --> get provider own meal
 
 export const providerRouter: Router = router

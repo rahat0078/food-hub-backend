@@ -113,6 +113,10 @@ const getMealById = async (id: string) => {
 
 }
 
+const getAllCategory = async () => {
+    return await prisma.category.findMany()
+}
+
 const createReview = async (userId: string, payload: { mealId: string; rating: number; comment?: string }) => {
     const { mealId, rating, comment } = payload;
 
@@ -136,5 +140,5 @@ const createReview = async (userId: string, payload: { mealId: string; rating: n
 
 
 export const mealService = {
-    getAllMeals, getMealById, createReview
+    getAllMeals, getMealById, createReview, getAllCategory
 }

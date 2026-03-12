@@ -3,6 +3,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma";
 import { Role } from "../../generated/prisma/enums";
 import nodemailer from 'nodemailer';
+import { UserStatus } from './../../generated/prisma/enums';
 
 
 const transporter = nodemailer.createTransport({
@@ -35,6 +36,12 @@ export const auth = betterAuth({
       phone: {
         type: "string",
         required: false,
+      },
+      status: {
+        type: "string",
+        options: Object.values(UserStatus),
+        defaultValue: UserStatus.ACTIVE,
+        required: false
       },
     },
   },

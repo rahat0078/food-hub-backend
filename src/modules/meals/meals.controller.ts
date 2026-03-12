@@ -51,6 +51,19 @@ const getMealById = async (req: Request, res: Response, next: NextFunction) => {
     }
 }
 
+const getAllCategory = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const result = await mealService.getAllCategory();
+        res.status(200).json({
+            success: true,
+            message: "Categories retrieved successfully",
+            result
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 const createReview = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const userId = req.user?.id
@@ -75,5 +88,5 @@ const createReview = async (req: Request, res: Response, next: NextFunction) => 
 
 
 export const mealsController = {
-    getAllMeals, getMealById, createReview
+    getAllMeals, getMealById, createReview, getAllCategory
 }

@@ -7,6 +7,7 @@ import notFound from './middlewares/notFound';
 import cors from 'cors';
 import { providerRouter } from './modules/providers/providers.routes';
 import errorHandler from './middlewares/errorHandler';
+import { adminRouter } from './modules/admin/admin.routes';
 
 
 const app: Application = express();
@@ -23,6 +24,7 @@ app.all("/api/auth/*splat", toNodeHandler(auth));
 app.use("/api/providers", providerRouter)
 app.use("/api/meals", mealsRouter)
 app.use("/api/orders", ordersRouter)
+app.use("/api/admin", adminRouter)
 
 
 
