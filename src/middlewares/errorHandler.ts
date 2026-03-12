@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { Prisma } from "../../generated/prisma/client";
+import { AppError } from './../utils/appError';
 
 
 function errorHandler(err: any, req: Request, res: Response, next: NextFunction) {
@@ -48,10 +49,15 @@ function errorHandler(err: any, req: Request, res: Response, next: NextFunction)
         errorMessage = "The service is currently unavailable. Please try again later.";
     }
 
+    else if (err instanceof AppError) {
+        statusCode = err.statusCode;
+        errorMessage = err.message;
+    }
+
     res.status(statusCode)
     res.json({
         message: errorMessage,
-        error: err  
+        error: err
     })
 }
 
