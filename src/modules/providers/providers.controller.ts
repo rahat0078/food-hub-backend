@@ -129,9 +129,26 @@ const getProviderById = async (req: Request, res: Response, next: NextFunction) 
     }
 }
 
+const getProviderMeals = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const userId = req.user?.id;
+
+        const result = await providersService.getProviderMeals(userId as string);
+
+        res.status(200).json({
+            success: true,
+            message: "Provider meals retrieved successfully",
+            data: result
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
+
 
 
 
 export const providersController = {
-    createMeals, updateMeal, deleteMeal, getAllProviders, getProviderById
+    createMeals, updateMeal, deleteMeal, getAllProviders, getProviderById, getProviderMeals
 }

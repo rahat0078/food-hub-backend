@@ -43,22 +43,66 @@ const getAllProviders = async () => {
 };
 
 const getProviderById = async (id: string) => {
-  const result = await prisma.providerProfile.findUnique({
-    where: { id },
-    include: {
-      meals: true,
-      _count: {
-        select: {
-            meals: true
+    const result = await prisma.providerProfile.findUnique({
+        where: { id },
+        include: {
+            meals: true,
+            _count: {
+                select: {
+                    meals: true
+                }
+            }
         }
-      }
-    }
-  });
+    });
 
-  return result;
+    return result;
+};
+
+const getProviderMeals = async (userId: string) => {
+    const provider = await prisma.providerProfile.findUnique({
+        where: { userId }
+    });
+
+    if (!provider) {
+        throw new Error("Provider profile not found");
+    }
+
+    const meals = await prisma.meal.findMany({
+        where: {
+            providerId: provider.id
+        },
+        include: {
+            category: true,
+            _count: {
+                select: {
+                    reviews: true
+                }
+            }
+        }
+    });
+
+    const soldData = await prisma.orderItem.groupBy({
+        by: ["mealId"],
+        _sum: {
+            quantity: true
+        }
+    });
+
+    const soldMap: Record<string, number> = {};
+
+    soldData.forEach(item => {
+        soldMap[item.mealId] = item._sum.quantity ?? 0;
+    });
+
+    const result = meals.map(meal => ({
+        ...meal,
+        totalSold: soldMap[meal.id] || 0
+    }));
+
+    return result;
 };
 
 
 export const providersService = {
-    createMeals, updateMeal, deleteMeal, getAllProviders, getProviderById
+    createMeals, updateMeal, deleteMeal, getAllProviders, getProviderById, getProviderMeals
 }
